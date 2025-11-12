@@ -15,8 +15,13 @@ Railway normally injects one of the following variables into each service:
 - `MYSQLDATABASE`
 - `MYSQLUSER` / `MYSQL_USER`
 - `MYSQLPASSWORD` / `MYSQL_PASSWORD`
+- `MYSQL_ROOT_PASSWORD`
+- `RAILWAY_TCP_PROXY_DOMAIN` / `RAILWAY_TCP_PROXY_HOST`
+- `RAILWAY_TCP_PROXY_PORT` / `RAILWAY_TCP_APPLICATION_PORT`
 
 Open the service in the Railway dashboard and inspect the **Variables** tab. At least one of the connection-string variables (for example `MYSQL_URL`) or the host/port variables must be present. The application now logs a warning during startup when none of these values are detected, which helps verify whether the variables are visible to the container.
+
+> Tip: The MySQL deployment shows its own copy of these variables, but they are **not** automatically shared with other services. When the backend service only lists `MYSQL_DATABASE` (as in the screenshot above), add the missing entries manually or reference them via Railway's "Add variable" → "Reference" option so the runtime container can see the host, port, username, and password as well.
 
 > Tip: If you renamed the variables or marked them as **Private**, make sure they are still scoped to the service running the Spring Boot application.
 

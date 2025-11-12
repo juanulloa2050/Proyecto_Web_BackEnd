@@ -37,6 +37,16 @@ public class RailwayMysqlEnvironmentPostProcessor implements EnvironmentPostProc
             "JAWSDB_URL",
             "JAWSDB_MARIA_URL");
 
+    private static final List<String> FALLBACK_PROXY_HOST_VARIABLES = List.of(
+            "RAILWAY_TCP_PROXY_DOMAIN",
+            "RAILWAY_TCP_PROXY_HOST",
+            "RAILWAY_TCP_HOST");
+
+    private static final List<String> FALLBACK_PROXY_PORT_VARIABLES = List.of(
+            "RAILWAY_TCP_PROXY_PORT",
+            "RAILWAY_TCP_APPLICATION_PORT",
+            "RAILWAY_TCP_PORT");
+
     static {
         Map<String, String> defaults = new LinkedHashMap<>();
         defaults.put("useSSL", "false");
@@ -138,7 +148,10 @@ public class RailwayMysqlEnvironmentPostProcessor implements EnvironmentPostProc
         }
         String password = parsed.password;
         if (password == null) {
-            password = firstNonEmptyAllowEmpty(environment, "MYSQLPASSWORD", "MYSQL_PASSWORD");
+            password = firstNonEmptyAllowEmpty(environment,
+                    "MYSQLPASSWORD",
+                    "MYSQL_PASSWORD",
+                    "MYSQL_ROOT_PASSWORD");
         }
         if (Objects.equals(username, parsed.username) && Objects.equals(password, parsed.password)) {
             return parsed;
@@ -153,15 +166,28 @@ public class RailwayMysqlEnvironmentPostProcessor implements EnvironmentPostProc
                 "MYSQL_HOST",
                 "MYSQL_HOSTNAME");
         if (!StringUtils.hasText(host)) {
+            host = firstNonEmpty(environment, FALLBACK_PROXY_HOST_VARIABLES.toArray(String[]::new));
+        }
+        if (!StringUtils.hasText(host)) {
             return null;
         }
 
         String portValue = firstNonEmpty(environment, "MYSQLPORT", "MYSQL_PORT");
+        if (!StringUtils.hasText(portValue)) {
+            portValue = firstNonEmpty(environment, FALLBACK_PROXY_PORT_VARIABLES.toArray(String[]::new));
+        }
         int port = parsePort(portValue);
 
         String database = firstNonEmpty(environment, "MYSQLDATABASE", "MYSQL_DATABASE");
-        String username = firstNonEmptyAllowEmpty(environment, "MYSQLUSER", "MYSQL_USER");
-        String password = firstNonEmptyAllowEmpty(environment, "MYSQLPASSWORD", "MYSQL_PASSWORD");
+        String username = firstNonEmptyAllowEmpty(environment,
+                "MYSQLUSER",
+                "MYSQL_USER",
+                "MYSQLUSERNAME",
+                "MYSQL_USERNAME");
+        String password = firstNonEmptyAllowEmpty(environment,
+                "MYSQLPASSWORD",
+                "MYSQL_PASSWORD",
+                "MYSQL_ROOT_PASSWORD");
 
         String jdbcUrl = buildJdbcUrl(host, port, database, Map.of());
         return new ParsedMysqlUrl(jdbcUrl, username, password, host, port, database, "environment variables");
