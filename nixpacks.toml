@@ -1,0 +1,8 @@
+[phases.build]
+cmds = ["./mvnw clean package -DskipTests"]
+
+[phases.start]
+cmd = "java -Dserver.port=$PORT -jar target/*.jar"
+
+[variables]
+MAVEN_OPTS = "-Xmx512m"
